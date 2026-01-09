@@ -29,3 +29,4 @@ public:
     std::vector<SlotCount> topBusySlots(int k = 10) const;
 };
 
+
