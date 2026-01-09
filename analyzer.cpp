@@ -2,33 +2,36 @@
 
 bool parseHour(const std::string& line,int start, int end,int& hour){
     int i = start;
-    while (i < end && line[i] != ' ') i++;
-    if (i + 1 >= end) return false;
+    while(i < end && line[i] != ' '){i++;}
+    if (i + 1 >= end){return false;}
     i++;
     int h = line[i] - '0';
     i++;
-    if (i < end && line[i] >= '0' && line[i] <= '9') {
+    if (i < end && line[i] >= '0' && line[i] <= '9'){
         h = h * 10 + (line[i] - '0');
         i++;
     }
-    if (i >= end || line[i] != ':' || h > 23) return false;
+    if (i >= end || line[i] != ':' || h > 23){return false;}
     hour = h;
     return true;
 }
 
 bool compareZones(const ZoneCount& a, const ZoneCount& b){
-    if (a.count != b.count) 
+    if (a.count != b.count){
         return a.count > b.count;
+    } 
 
     return a.zone < b.zone;
 }
 
 bool compareSlots(const SlotCount& a, const SlotCount& b){
-    if (a.count != b.count) 
+    if (a.count != b.count){
         return a.count > b.count;
+    }
 
-    if (a.zone != b.zone)   
-        return a.zone < b.zone;
+    if (a.zone != b.zone){
+       return a.zone < b.zone; 
+    }
 
     return a.hour < b.hour;
 }
@@ -43,8 +46,7 @@ void TripAnalyzer::ingestFile(const std::string& csvPath) {
     std::string line;
     std::string zone;
 
-    // skip header
-    if(!std::getline(file, line)) return;
+    if(!std::getline(file, line)){return;}
 
     while (std::getline(file, line)){
 
@@ -57,11 +59,10 @@ void TripAnalyzer::ingestFile(const std::string& csvPath) {
         if (firstComma  == -1 ||secondComma == -1 ||thirdComma  == -1 ||fourthComma == -1 ||fifthComma  == -1){continue;}
 
         zone.assign(line.data() + firstComma + 1,secondComma - firstComma - 1);
-        if(zone.empty()) continue;
+        if(zone.empty()){continue;}
 
         int hour;
-        if (!parseHour(line, thirdComma + 1, fourthComma, hour))
-            continue;
+        if (!parseHour(line, thirdComma + 1, fourthComma, hour)){continue;}
 
         auto& hours = slotCounts[zone];
         hours[hour]++;
@@ -72,10 +73,11 @@ void TripAnalyzer::ingestFile(const std::string& csvPath) {
 std::vector<ZoneCount> TripAnalyzer::topZones(int k) const {
     std::vector<ZoneCount> result;
 
-    for (auto& p : slotCounts) {
+    for (auto& p : slotCounts){
         uint32_t total = p.second[24];
-        if (total > 0)
+        if (total > 0){
             result.push_back({p.first, total});
+        }
     }
 
     int limit = std::min(k, static_cast<int>(result.size()));
@@ -91,9 +93,10 @@ std::vector<SlotCount> TripAnalyzer::topBusySlots(int k) const {
 
     for (auto& p : slotCounts) {
         auto& hours = p.second;
-        for (int h = 0; h < 24; ++h) {
-            if (hours[h] > 0)
+        for (int h = 0; h < 24; ++h){
+            if (hours[h] > 0){
                 result.push_back({p.first, h, hours[h]});
+            }
         }
     }
 
@@ -103,4 +106,5 @@ std::vector<SlotCount> TripAnalyzer::topBusySlots(int k) const {
     result.resize(limit);
     return result;
 }
+
 
